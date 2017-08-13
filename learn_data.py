@@ -16,5 +16,10 @@ def read():
     raw_data['col_sum'] =raw_data.apply(lambda x: x[1:].sum(), axis=1)
     max_data = raw_data[raw_data['col_sum'] == raw_data['col_sum'].max()]
 
+
+    # 过路出文件中浏览流浪比较大的几个记录， 排序在画图
+
+
+
 if __name__ == '__main__':
     read()
