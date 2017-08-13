@@ -5,4 +5,7 @@ __site__ = ''
 __software__ = 'PyCharm'
 __file__ = 'config.py' 
 
-ab_path = 'F:\Contest\kaggle\WTTSF_Python-master\data'
+
+def get_data_absolute_path():
+    ab_path = 'F:\Contest\kaggle\WTTSF_Python-master\data'
+    return ab_path
