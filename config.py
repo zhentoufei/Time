@@ -9,3 +9,7 @@ __file__ = 'config.py'
 def get_data_absolute_path():
     ab_path = 'F:\Contest\kaggle\WTTSF_Python-master\data'
     return ab_path
+
+def get_data_pickle_path():
+    path = 'F:\Contest\kaggle\WTTSF_Python-master\data\cache'
+    return path
