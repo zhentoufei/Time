@@ -10,7 +10,7 @@ import pandas as pd
 from datetime import datetime
 import matplotlib.pylab as plt
 import test_stationarity
-
+from statsmodels.tsa.seasonal import seasonal_decompose
 
 
 
@@ -25,3 +25,17 @@ ts = df['Passengers']  # 生成pd.Series对象
 ts_log = np.log(ts)
 test_stationarity.draw_ts(ts_log)
 test_stationarity.draw_trend(ts_log, 12)
+
+diff_12 = ts_log.diff(12)
+diff_12.dropna(inplace=True)
+diff_12_1 = diff_12.diff(1)
+diff_12_1.dropna(inplace=True)
+test_stationarity.testStationarity(diff_12_1)
+print(test_stationarity.testStationarity(diff_12_1))
+
+
+decomposition = seasonal_decompose(ts_log, model="additive")
+
+trend = decomposition.trend
+seasonal = decomposition.seasonal
+residual = decomposition.resid
