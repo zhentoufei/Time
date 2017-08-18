@@ -5,6 +5,7 @@ __site__ = ''
 __software__ = 'PyCharm'
 __file__ = 'test2.py'
 
+import sys
 import numpy as np
 import pandas as pd
 from datetime import datetime
@@ -13,6 +14,7 @@ import test_stationarity
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.tsa.seasonal import seasonal_decompose
+from statsmodels.tsa.arima_model import ARIMA, ARMA, _arima_model
 import statsmodels.api as sm
 
 
@@ -27,7 +29,7 @@ def diff_ts(ts, d):
     for i in d:
         last_data_shift_list.append(tmp_ts[-i])
         print last_data_shift_list
-        shift_ts = tmp_ts.shift(i)
+        shift_ts = tmp_ts.shift(i)  #
         shift_ts_list.append(shift_ts)
         tmp_ts = tmp_ts - shift_ts
     tmp_ts.dropna(inplace=True)
@@ -82,6 +84,28 @@ def acf_pacf_plot(ts_log_diff):
     sm.graphics.tsa.plot_acf(ts_log_diff, lags=40)  # ARIMA,q
     sm.graphics.tsa.plot_pacf(ts_log_diff, lags=40)  # ARIMA,p
     plt.savefig('pic/acf_pacf_plot.png')
+
+
+def _proper_model(ts_log_diff, maxLag):
+    best_p = 0
+    best_q = 0
+    best_bic = sys.maxint
+    best_model = None
+    for p in np.arange(maxLag):
+        for q in np.arange(maxLag):
+            model = ARMA(ts_log_diff, order=(p, q))
+            try:
+                results_ARMA = model.fit(disp=-1)
+            except:
+                continue
+            bic = results_ARMA.bic
+            print bic, best_bic
+            if bic < best_bic:
+                best_p = p
+                best_q = q
+                best_bic = bic
+                best_model = results_ARMA
+    return best_p, best_q, best_model
 
 
 def do_something():
@@ -156,7 +180,7 @@ def do_something():
     plt.subplot(412)
     plt.plot(trend, label='Trend')
     plt.legend(loc='best')
-    plt.subplot(413);
+    plt.subplot(413)
     plt.plot(seasonal, label='Seasonality')
     plt.legend(loc='best')
     plt.subplot(414)
@@ -180,5 +204,26 @@ def do_something():
     acf_pacf_plot(ts_log_diff)  # 调用一阶差分
 
 
+# 注意这里面使用的ts_log_diff是经过合适阶数的差分之后的数据，上文中提到ARIMA该开源库，不支持3阶以上的#差分。所以我们需要提前将数据差分好再传入
+
+
+
 if __name__ == '__main__':
-    do_something()
+    dateparse = lambda dates: pd.datetime.strptime(dates, '%Y-%m')
+    data = pd.read_csv('AirPassengers.csv', parse_dates=['date'], index_col='date', date_parser=dateparse)
+
+    ts = data['Passengers']
+    d = [1]  # 定义差分序列
+    ts_log = np.log(ts)
+    ts_log_diff = diff_ts(ts_log, d)
+    # res = _proper_model(ts_log_diff, 9)  # 对一阶差分求最优p和q
+    model = ARIMA(ts_log, order=(8,1,7)) # 第二个参数表示的是一阶差分
+    results_ARIMA = model.fit(disp=-1)
+    plt.plot(ts_log_diff)
+    plt.plot(results_ARIMA.fittedvalues, color='red')
+    plt.plot(results_ARIMA.predict(), color='black')
+    plt.title('RSS: %.4f'% sum((results_ARIMA.fittedvalues-ts_log_diff)**2))
+    plt.show()
+    #  p和q: 8, 9
+    print '==============================='
+    # print res
