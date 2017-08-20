@@ -99,12 +99,14 @@ def _proper_model(ts_log_diff, maxLag):
             except:
                 continue
             bic = results_ARMA.bic
-            print bic, best_bic
+            # print bic, best_bic
             if bic < best_bic:
                 best_p = p
                 best_q = q
                 best_bic = bic
                 best_model = results_ARMA
+    print 'best_p', best_p
+    print 'best_q', best_q
     return best_p, best_q, best_model
 
 
@@ -218,23 +220,33 @@ if __name__ == '__main__':
     data = pd.read_csv('AirPassengers.csv', parse_dates=['date'], index_col='date', date_parser=dateparse)
 
     ts = data['Passengers']
+    print ts
     d = [1]  # 定义差分序列
     ts_log = np.log(ts)
     ts_log_diff = diff_ts(ts_log, d)
     # res = _proper_model(ts_log_diff, 9)  # 对一阶差分求最优p和q
-    model = ARIMA(ts_log, order=(8,1,7)) # 第二个参数表示的是一阶差分
+    model = ARIMA(ts_log, order=(10,1,7)) # 第二个参数表示的是一阶差分
     results_ARIMA = model.fit(disp=-1)
+    plt.plot(ts_log_diff)
+    plt.plot(results_ARIMA.fittedvalues, color='black')
+    plt.title('RSS: %.4f'% sum((results_ARIMA.fittedvalues-ts_log_diff)**2))
+    plt.show()
     print '==============================='
-    print type(results_ARIMA.forecast(12)[0])
     new_index = get_date_range('1961-01', 12, format='YYYY-MM')
-    forecast = predict_diff_recover(results_ARIMA.forecast(12)[0],d)
-    predic = pd.Series(forecast, copy=True, index=new_index)
+    # forecast = predict_diff_recover(results_ARIMA.forecast(12)[0],d)
+    predic = pd.Series(np.exp(results_ARIMA.forecast(12)[0]), copy=True, index=new_index)
+    print predic
     # predict_diff_recover
     plt.plot(predic, color='red')
+    plt.plot(ts)
+    plt.show()
+
+
+
+
     # plt.plot(results_ARIMA.forecast(12)[0], color='red')
     # plt.plot(np.exp(results_ARIMA.fittedvalues), color='black')
     # plt.title('RSS: %.4f'% sum((results_ARIMA.fittedvalues-ts_log_diff)**2))
-    plt.show()
     # print model.predict(pd.datetime.strptime('1961-01', '%Y-%m'), 24)
     #  p和q: 8, 9
     # print res
