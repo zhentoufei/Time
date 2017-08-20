@@ -206,7 +206,12 @@ def do_something():
 
 # 注意这里面使用的ts_log_diff是经过合适阶数的差分之后的数据，上文中提到ARIMA该开源库，不支持3阶以上的#差分。所以我们需要提前将数据差分好再传入
 
-
+import arrow
+def get_date_range(start, limit, level='month',format='YYYY-MM-DD'):
+    start = arrow.get(start, format)
+    result=(list(map(lambda dt: dt.format(format) , arrow.Arrow.range(level, start, limit=limit))))
+    dateparse2 = lambda dates:pd.datetime.strptime(dates,'%Y-%m')
+    return map(dateparse2, result)
 
 if __name__ == '__main__':
     dateparse = lambda dates: pd.datetime.strptime(dates, '%Y-%m')
@@ -219,11 +224,17 @@ if __name__ == '__main__':
     # res = _proper_model(ts_log_diff, 9)  # 对一阶差分求最优p和q
     model = ARIMA(ts_log, order=(8,1,7)) # 第二个参数表示的是一阶差分
     results_ARIMA = model.fit(disp=-1)
-    plt.plot(ts_log_diff)
-    plt.plot(results_ARIMA.fittedvalues, color='red')
-    plt.plot(results_ARIMA.predict(), color='black')
-    plt.title('RSS: %.4f'% sum((results_ARIMA.fittedvalues-ts_log_diff)**2))
-    plt.show()
-    #  p和q: 8, 9
     print '==============================='
+    print type(results_ARIMA.forecast(12)[0])
+    new_index = get_date_range('1961-01', 12, format='YYYY-MM')
+    forecast = predict_diff_recover(results_ARIMA.forecast(12)[0],d)
+    predic = pd.Series(forecast, copy=True, index=new_index)
+    # predict_diff_recover
+    plt.plot(predic, color='red')
+    # plt.plot(results_ARIMA.forecast(12)[0], color='red')
+    # plt.plot(np.exp(results_ARIMA.fittedvalues), color='black')
+    # plt.title('RSS: %.4f'% sum((results_ARIMA.fittedvalues-ts_log_diff)**2))
+    plt.show()
+    # print model.predict(pd.datetime.strptime('1961-01', '%Y-%m'), 24)
+    #  p和q: 8, 9
     # print res
