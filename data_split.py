@@ -26,6 +26,7 @@ def read_train():
     df_train['access'] = df_train['Page'].apply(lambda x: x.split('_')[-2])
     df_train['agent'] = df_train['Page'].apply(lambda x: x.split('_')[-1])
     df_train['title'] = df_train['Page'].apply(lambda x: x.split('.wikipedia')[0])
+
     # ================================================
     # train_flattened = pd.melt(train[list(train.columns[-49:])+['Page']], id_vars='Page', var_name='date', value_name='Visits')
     for month in range(7, 13):
@@ -37,16 +38,14 @@ def read_train():
 
         path = os.path.join(get_data_absolute_path(), 'split_data/Page_{0}.csv'.format(present_month))
         col_list = ['Page','title', 'access', 'agent'] + tmp_list
-        train_flattened = pd.melt(df_train[col_list], id_vars=['title', 'access', 'agent'],
+        train_flattened = pd.melt(df_train[col_list], id_vars=['Page','title', 'access', 'agent'],
                                   var_name='date', value_name='visits')
-        train_flattened.drop(train_flattened.columns[[0]], axis=1, inplace=True)  # 删除第一列
+        # train_flattened.drop(train_flattened.columns[[0]], axis=1, inplace=True)  # 删除第一列
 
-        train_flattened['year'] = train_flattened['date'].apply(lambda x: x.split('-')[0])
-        train_flattened['month'] = train_flattened['date'].apply(lambda x: x.split('-')[1])
-        train_flattened['day'] = train_flattened['date'].apply(lambda x: x.split('-')[2])
-
-        train_flattened['lang'] = train_flattened.Page.map(get_lannguage)  # 获取语言类型
+        train_flattened['lang'] = train_flattened['Page'].map(get_lannguage)  # 获取语言类型
         train_flattened['date'] = train_flattened['date'].astype('datetime64[ns]')
+        train_flattened['month'] = (train_flattened.date.dt.month).astype(float)
+        train_flattened['day'] = (train_flattened.date.dt.day).astype(float)
         train_flattened['weekday'] = (train_flattened.date.dt.dayofweek).astype(float)
         train_flattened['is_weenkend'] = ((train_flattened.date.dt.dayofweek) // 5 == 1).astype(float)
 
@@ -54,8 +53,8 @@ def read_train():
         del df_train['Page']
 
         train_flattened = pd.get_dummies(train_flattened,
-                                         columns=['year', 'month', 'day', 'weekday', 'is_weenkend', 'access', 'agent'],
-                                         prefix=['year', 'month', 'day', 'weekday', 'is_weenkend', 'access', 'agent'])
+                                         columns=['month', 'day', 'weekday', 'is_weenkend', 'access', 'agent'],
+                                         prefix=['month', 'day', 'weekday', 'is_weenkend', 'access', 'agent'])
 
         train_flattened.to_csv(path, encoding='utf-8')
         print("finish: {0}".format(path))
@@ -69,9 +68,9 @@ def read_train():
 
         path = os.path.join(get_data_absolute_path(), 'split_data/Page_{0}.csv'.format(present_month))
         col_list = ['Page','title', 'access', 'agent'] + tmp_list
-        train_flattened = pd.melt(df_train[col_list], id_vars=['title', 'access', 'agent'],
+        train_flattened = pd.melt(df_train[col_list], id_vars=['Page','title', 'access', 'agent'],
                                   var_name='date', value_name='visits')
-        train_flattened.drop(train_flattened.columns[[0]], axis=1, inplace=True)  # 删除第一列
+        # train_flattened.drop(train_flattened.columns[[0]], axis=1, inplace=True)  # 删除第一列
 
         train_flattened['year'] = train_flattened['date'].apply(lambda x: x.split('-')[0])
         train_flattened['month'] = train_flattened['date'].apply(lambda x: x.split('-')[1])
@@ -79,14 +78,16 @@ def read_train():
 
         train_flattened['lang'] = train_flattened.Page.map(get_lannguage)  # 获取语言类型
         train_flattened['date'] = train_flattened['date'].astype('datetime64[ns]')
+        train_flattened['month'] = (train_flattened.date.dt.month).astype(float)
+        train_flattened['day'] = (train_flattened.date.dt.day).astype(float)
         train_flattened['weekday'] = (train_flattened.date.dt.dayofweek).astype(float)
         train_flattened['is_weenkend'] = ((train_flattened.date.dt.dayofweek) // 5 == 1).astype(float)
 
         del train_flattened['date']
         del df_train['Page']
         train_flattened = pd.get_dummies(train_flattened,
-                                         columns=['year', 'month', 'day', 'weekday', 'is_weenkend', 'access', 'agent'],
-                                         prefix=['year', 'month', 'day', 'weekday', 'is_weenkend', 'access', 'agent'])
+                                         columns=['month', 'day', 'weekday', 'is_weenkend', 'access', 'agent'],
+                                         prefix=['month', 'day', 'weekday', 'is_weenkend', 'access', 'agent'])
 
         train_flattened.to_csv(path, encoding='utf-8')
         print("finish: {0}".format(path))
