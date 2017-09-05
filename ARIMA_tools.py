@@ -14,7 +14,6 @@ from config import get_data_pickle_path, get_data_absolute_path
 import arrow
 
 
-
 # 差分操作,d代表差分序列，比如[1,1,1]可以代表3阶差分。  [12,1]可以代表第一次差分偏移量是12，第二次差分偏移量是1
 def diff_ts(ts, d):
     global shift_ts_list
@@ -25,7 +24,7 @@ def diff_ts(ts, d):
     tmp_ts = ts
     for i in d:
         last_data_shift_list.append(tmp_ts[-i])
-        print last_data_shift_list
+        print(last_data_shift_list)
         shift_ts = tmp_ts.shift(i)  #
         shift_ts_list.append(shift_ts)
         tmp_ts = tmp_ts - shift_ts
@@ -68,7 +67,7 @@ def proper_model(ts_log_diff, maxLag):
     best_model = None
     for p in np.arange(maxLag):
         for q in np.arange(maxLag):
-            print 'present p: ', p, '  q: ', q
+            print('present p: ', p, '  q: ', q)
             model = ARMA(ts_log_diff, order=(p, q))
             try:
                 results_ARMA = model.fit(disp=-1)
@@ -81,8 +80,8 @@ def proper_model(ts_log_diff, maxLag):
                 best_q = q
                 best_bic = bic
                 best_model = results_ARMA
-    print 'best_p: ', best_p
-    print 'best_q: ', best_q
+    print('best_p: ', best_p)
+    print('best_q: ', best_q)
     return best_model
 
 

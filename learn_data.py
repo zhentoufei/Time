@@ -9,7 +9,7 @@ import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import cPickle as pickle
+import pickle as pickle
 from config import get_data_absolute_path, get_data_pickle_path
 from statsmodels.tsa.arima_model import ARIMA, ARMA
 from statsmodels.tsa.seasonal import seasonal_decompose
